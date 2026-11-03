@@ -1,0 +1,37 @@
+// MetaAlmanya web sitesi — Cloudflare Workers (ücretsiz plan)
+// Statik sayfalar /public klasöründen sunulur (ücretsiz ve sınırsız).
+// Worker kodu sadece /api ve /panel adreslerinde çalışır.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "metaalmanya-site",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/api/*", "/panel", "/panel/*"]
+  },
+  // Randevu veritabanı. Cloudflare'de oluştururken mutlaka "EU" (AB) seçilecek:
+  //   npx wrangler d1 create metaalmanya-randevu --jurisdiction=eu
+  // Çıkan database_id buraya yazılacak.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "metaalmanya-randevu",
+      "database_id": "74cb3884-69ad-478c-824a-4c622e9f9236",
+      "migrations_dir": "migrations"
+    }
+  ],
+  // Hatırlatma e-postaları için saatte bir çalışır.
+  "triggers": { "crons": ["5 * * * *"] },
+  "vars": {
+    "SITE_URL": "https://www.metaalmanya.com",
+    "TEAM_EMAIL": "kazim@metaalmanya.com",
+    "MAIL_FROM": "MetaAlmanya <kazim@metaalmanya.com>",
+    "TURNSTILE_SITE_KEY": ""
+  },
+  // Gizli değerler (kodda tutulmaz, Cloudflare panelinden "Secret" olarak girilir):
+  //   PANEL_PASSWORD, TURNSTILE_SECRET, GMAIL_CLIENT_ID, GMAIL_CLIENT_SECRET, GMAIL_REFRESH_TOKEN
+  "observability": { "enabled": true }
+}
